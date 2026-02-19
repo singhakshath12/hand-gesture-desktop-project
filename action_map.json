@@ -1,0 +1,26 @@
+{
+    "fist": {
+        "type": "hotkey",
+        "keys": ["alt", "f4"]
+    },
+    "UP": {
+        "type": "alt_tab",
+        "count": 1
+    },
+    "two_fingers": {
+        "type": "alt_tab",
+        "count": 2
+    },
+    "three_fingers": {
+        "type": "alt_tab",
+        "count": 3
+    },
+    "four_fingers": {
+        "type": "alt_tab",
+        "count": 4
+    },
+    "LEFT": {
+        "type": "press",
+        "key": "printscreen"
+    }
+}

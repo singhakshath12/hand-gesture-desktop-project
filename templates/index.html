@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GestureDesk Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h1>GestureDesk Dashboard</h1>
+
+<h2>Gesture → Action Mapping</h2>
+
+<table>
+    <tr>
+        <th>Gesture</th>
+        <th>Action Type</th>
+        <th>Details</th>
+        <th>Delete</th>
+    </tr>
+
+    {% for gesture, action in action_map.items() %}
+    <tr>
+        <td>{{ gesture }}</td>
+        <td>{{ action.type }}</td>
+        <td>{{ action }}</td>
+        <td>
+            <button onclick="deleteGesture('{{ gesture }}')">Delete</button>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<hr>
+
+<h3>Add / Update Gesture</h3>
+
+<input id="gesture" placeholder="Gesture name">
+<select id="type">
+    <option value="hotkey">Hotkey</option>
+    <option value="press">Press</option>
+    <option value="alt_tab">Alt+Tab</option>
+</select>
+
+<input id="value" placeholder="Example: alt,f4 OR count number">
+
+<button onclick="updateGesture()">Save</button>
+
+<br><br>
+<button onclick="retrain()">Retrain Model</button>
+
+<script>
+function updateGesture() {
+    const gesture = document.getElementById("gesture").value;
+    const type = document.getElementById("type").value;
+    const value = document.getElementById("value").value;
+
+    let action = {};
+
+    if (type === "hotkey") {
+        action = { type: "hotkey", keys: value.split(",") };
+    }
+    else if (type === "press") {
+        action = { type: "press", key: value };
+    }
+    else if (type === "alt_tab") {
+        action = { type: "alt_tab", count: parseInt(value) };
+    }
+
+    fetch("/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gesture: gesture, action: action })
+    }).then(() => location.reload());
+}
+
+function deleteGesture(gesture) {
+    fetch("/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gesture: gesture })
+    }).then(() => location.reload());
+}
+
+function retrain() {
+    fetch("/retrain", { method: "POST" })
+    .then(() => alert("Retraining started"));
+}
+</script>
+
+</body>
+</html>
