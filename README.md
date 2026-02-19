@@ -1,0 +1,1 @@
+this is a project that helps everyday desktop users to make their lives a little easier by allowing them to operate and perform specific tasks and functions using hand gestures through their webcam. they can add new gestures or remap the existing gestures to whatever command or function they want. some examples are switching windows, screenshotting, closing windows, etc.
