@@ -1,0 +1,88 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+    margin: 40px;
+}
+
+table {
+    margin: auto;
+    border-collapse: collapse;
+    width: 70%;
+}
+
+th, td {
+    border: 1px solid #444;
+    padding: 10px;
+}
+
+th {
+    background: #222;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background: red;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+}
+
+.gesture-image {
+    width: 150px;
+    height: auto;
+    max-height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.gesture-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.gesture-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);  
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.instructions {
+    background: #f8f8f8;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.gesture-card {
+    background: #f8f8f8;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.card-buttons {
+    margin-top: 10px;
+}
+
+.card-buttons button {
+    margin: 5px;
+}
+
+.live-box {
+    background: #222;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    font-size: 20px;
+    margin-bottom: 20px;
+}

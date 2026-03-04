@@ -9,16 +9,16 @@ from action_mapping import trigger_action
 CONF_THRESHOLD = 0.80
 COOLDOWN = 1.5
 
-model = load_model("../model/gesture_ann.keras")
+model = load_model("model/gesture_ann.keras")
 
-with open("../model/label_encoder.pkl", "rb") as f:
+with open("model/label_encoder.pkl", "rb") as f:
     encoder = pickle.load(f)
 
 mp_hands = mp.solutions.hands
 mp_draw = mp.solutions.drawing_utils
 hands = mp_hands.Hands(max_num_hands=1)
 
-cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
 print("Checking camera...")
 
@@ -65,7 +65,7 @@ while True:
 
             if confidence > CONF_THRESHOLD:
                 gesture = encoder.inverse_transform([predicted_index])[0]
-                trigger_action(gesture)
+               #trigger_action(gesture)
 
                 cv2.putText(frame,
                             f"{gesture} ({confidence:.2f})",    

@@ -3,7 +3,6 @@ import mediapipe as mp
 import csv
 import numpy as np
 
-# Define your gestures here
 GESTURES = {
     ord('1'): "fist",
     ord('2'): "two_fingers",
@@ -27,7 +26,7 @@ mp_hands = mp.solutions.hands
 mp_draw = mp.solutions.drawing_utils
 hands = mp_hands.Hands(max_num_hands=1)
 
-cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)
 
 print("Checking camera...")
 
@@ -35,7 +34,7 @@ if not cap.isOpened():
     print("No camera detected.")
     exit()
 
-with open("desktop_gesture_data.csv", "a", newline="") as f: 
+with open("model/desktop_gesture_data.csv", "a", newline="") as f:
     writer = csv.writer(f)
 
     while True:
@@ -63,11 +62,9 @@ with open("desktop_gesture_data.csv", "a", newline="") as f:
                     features.append(point.x - base_x)
                     features.append(point.y - base_y)
                     features.append(point.z - base_z)
-
-# 🔹 Convert to numpy array
                 features = np.array(features)
 
-# 🔹 Scale normalization
+# normalization
                 max_value = np.max(np.abs(features))
                 if max_value != 0:
                     features = features / max_value

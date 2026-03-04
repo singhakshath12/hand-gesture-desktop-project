@@ -1,7 +1,10 @@
 {
     "fist": {
         "type": "hotkey",
-        "keys": ["alt", "f4"]
+        "keys": [
+            "alt",
+            "f4"
+        ]
     },
     "UP": {
         "type": "alt_tab",
@@ -22,5 +25,11 @@
     "LEFT": {
         "type": "press",
         "key": "printscreen"
+    },
+    "call": {
+        "type": "hotkey",
+        "keys": [
+            "L"
+        ]
     }
 }

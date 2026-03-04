@@ -7,9 +7,10 @@ import numpy as np
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(static_image_mode=True, max_num_hands=1)
 
-dataset_path = "dataset"
+dataset_path = "../dataset"
 
-with open("desktop_gesture_data.csv", "w", newline="") as f:
+with open("model/desktop_gesture_data.csv", "w", newline="") as f:
+
     writer = csv.writer(f)
 
     for label in os.listdir(dataset_path):
@@ -42,10 +43,9 @@ with open("desktop_gesture_data.csv", "w", newline="") as f:
                     data.append(point.y - base_y)
                     data.append(point.z - base_z)
 
-                # 🔹 Convert to numpy array
                 data = np.array(data)
 
-                # 🔹 Scale normalization
+                # normalization
                 max_value = np.max(np.abs(data))
                 if max_value != 0:
                     data = data / max_value

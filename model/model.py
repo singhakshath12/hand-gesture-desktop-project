@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.callbacks import EarlyStopping
 
-data = pd.read_csv("desktop_gesture_data.csv", header=None)
+data = pd.read_csv("model/desktop_gesture_data.csv", header=None)
 
 X = data.iloc[:, :-1].values
 y = data.iloc[:, -1].values
@@ -16,7 +16,7 @@ y = data.iloc[:, -1].values
 encoder = LabelEncoder()
 y_encoded = encoder.fit_transform(y)
 
-with open("label_encoder.pkl", "wb") as f:
+with open("model/label_encoder.pkl", "wb") as f:
     pickle.dump(encoder, f)
 
 y_categorical = to_categorical(y_encoded)
@@ -54,4 +54,4 @@ loss, acc = model.evaluate(X_test, y_test)
 print("Final Accuracy:", acc)
 print(encoder.classes_)
 
-model.save("gesture_ann.keras")
+model.save("model/gesture_ann.keras")

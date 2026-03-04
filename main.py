@@ -4,6 +4,15 @@ import numpy as np
 import pickle
 from tensorflow.keras.models import load_model
 from action_engine import trigger_action
+import os
+import time
+current_prediction = {
+    "gesture": None,
+    "confidence": 0
+}
+
+MODEL_PATH = "model/gesture_ann.keras"
+ENCODER_PATH = "model/label_encoder.pkl"
 
 CONF_THRESHOLD = 0.8
 FRAME_CONFIRMATION = 2
@@ -11,10 +20,25 @@ FRAME_CONFIRMATION = 2
 last_detected_gesture = None
 gesture_counter = 0
 
-model = load_model("model/gesture_ann.keras")
+model = load_model(MODEL_PATH)
 
-with open("model/label_encoder.pkl", "rb") as f:
+with open(ENCODER_PATH, "rb") as f:
     encoder = pickle.load(f)
+
+model_timestamp = os.path.getmtime(MODEL_PATH)
+
+def check_model_reload():
+    global model, encoder, model_timestamp
+    current_timestamp = os.path.getmtime(MODEL_PATH)
+
+    if current_timestamp != model_timestamp:
+        print("🔄 New model detected. Reloading...")
+        model = load_model(MODEL_PATH)
+
+        with open(ENCODER_PATH, "rb") as f:
+            encoder = pickle.load(f)
+        model_timestamp = current_timestamp
+        print("✅ Model reloaded successfully.")
 
 mp_hands = mp.solutions.hands
 mp_draw = mp.solutions.drawing_utils
@@ -44,6 +68,7 @@ def normalize_landmarks(lm):
 
 while True:
     ret, frame = cap.read()
+    check_model_reload()
     if not ret:
         continue
 
@@ -67,6 +92,8 @@ while True:
 
             if confidence > CONF_THRESHOLD:
                 gesture = encoder.inverse_transform([predicted_index])[0]
+                current_prediction["gesture"] = gesture
+                current_prediction["confidence"] = round(float(confidence), 3)
 
                 if gesture == last_detected_gesture:
                     gesture_counter += 1
@@ -92,6 +119,8 @@ while True:
             else:
                 last_detected_gesture = None
                 gesture_counter = 0
+                current_prediction["gesture"] = None
+                current_prediction["confidence"] = 0
 
 
     cv2.imshow("Gesture Control", frame)

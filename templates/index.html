@@ -8,62 +8,161 @@
 
 <h1>GestureDesk Dashboard</h1>
 
-<h2>Gesture → Action Mapping</h2>
+<h2>Live Gesture Detection</h2>
 
-<table>
-    <tr>
-        <th>Gesture</th>
-        <th>Action Type</th>
-        <th>Details</th>
-        <th>Delete</th>
-    </tr>
+<div>
+    <button onclick="startCamera()">Start Camera</button>
+    <button onclick="stopCamera()">Stop Camera</button>
+</div>
 
-    {% for gesture, action in action_map.items() %}
-    <tr>
-        <td>{{ gesture }}</td>
-        <td>{{ action.type }}</td>
-        <td>{{ action }}</td>
-        <td>
-            <button onclick="deleteGesture('{{ gesture }}')">Delete</button>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+<div class="live-section">
+    <img id="videoStream" width="640">
+</div>
 
 <hr>
 
-<h3>Add / Update Gesture</h3>
+<h2>Gesture → Action Mapping</h2>
 
-<input id="gesture" placeholder="Gesture name">
-<select id="type">
-    <option value="hotkey">Hotkey</option>
-    <option value="press">Press</option>
-    <option value="alt_tab">Alt+Tab</option>
+<div class="gesture-grid">
+{% for gesture in all_gestures %}
+<div class="gesture-card">
+
+    <h3>{{ gesture }}</h3>
+
+    <img src="{{ url_for('static', filename='images/' + gesture + '.jpeg')}}"
+         class="gesture-image">
+
+    {% if gesture in action_map %}
+        <p>{{ action_map[gesture] }}</p>
+    {% else %}
+        <p class="no-action">No function assigned</p>
+    {% endif %}
+
+    <div class="card-buttons">
+        <button onclick="remapGesture('{{ gesture }}')">Remap</button>
+        <button onclick="deleteGesture('{{ gesture }}')">Delete</button>
+    </div>
+
+</div>
+{% endfor %}
+</div>
+
+<hr>
+
+<h2>Built-in Gestures (Already Trained)</h2>
+<ul>
+{% for g in builtin %}
+    <li>{{ g }}</li>
+{% endfor %}
+</ul>
+
+<p style="color:red;">
+Do NOT add these as new gestures.
+</p>
+
+<hr>
+
+<h3>Update / Remap Gesture</h3>
+
+<input id="remapGestureName" placeholder="Gesture name">
+
+<select id="remapType">
+    <option value="hotkey">Keyboard Shortcut</option>
+    <option value="press">Single Key</option>
+    <option value="alt_tab">Alt + Tab</option>
+    <option value="volume">Volume Control</option>
+    <option value="brightness">Brightness Control</option>
+    <option value="open_app">Open Application</option>
+    <option value="system_command">System Command</option>
 </select>
 
-<input id="value" placeholder="Example: alt,f4 OR count number">
+<input id="remapValue" placeholder="Enter action value">
 
-<button onclick="updateGesture()">Save</button>
+<button onclick="updateGesture()">Save Mapping</button>
 
-<br><br>
-<button onclick="retrain()">Retrain Model</button>
+<hr>
+
+<h2>Add New Gesture</h2>
+
+<div class="instructions">
+    <h4>How to Train:</h4>
+    <ul>
+        <li>Keep your hand clearly visible.</li>
+        <li>Hold gesture steady.</li>
+        <li>Move hand slowly around frame.</li>
+        <li>Move closer and farther from camera.</li>
+        <li>Training lasts ~10 seconds.</li>
+    </ul>
+</div>
+
+<input id="newGestureName" placeholder="Enter new gesture name">
+
+<select id="newType">
+    <option value="hotkey">Keyboard Shortcut</option>
+    <option value="press">Single Key</option>
+    <option value="alt_tab">Alt + Tab</option>
+</select>
+
+<input id="newGestureValue" placeholder="Enter action value">
+
+<button onclick="addNewGesture()">Create & Train</button>
+
+<div id="collectionProgress" style="margin-top:15px;">
+    <div style="background:#ddd;width:300px;height:20px;border-radius:10px;">
+        <div id="progressBar"
+             style="background:red;height:100%;width:0%;border-radius:10px;">
+        </div>
+    </div>
+    <p id="collectionText">Idle</p>
+</div>
+
+<p id="status">Status: idle</p>
 
 <script>
+
+function startCamera() {
+    fetch("/start_camera", { method: "POST" })
+    .then(() => {
+        document.getElementById("videoStream").src = "/video_feed";
+    });
+}
+
+function stopCamera() {
+    fetch("/stop_camera", { method: "POST" })
+    .then(() => {
+        document.getElementById("videoStream").src = "";
+    });
+}
+
+function remapGesture(gesture) {
+    document.getElementById("remapGestureName").value = gesture;
+    window.scrollTo(0, document.body.scrollHeight);
+}
+
 function updateGesture() {
-    const gesture = document.getElementById("gesture").value;
-    const type = document.getElementById("type").value;
-    const value = document.getElementById("value").value;
+
+    const gesture = document.getElementById("remapGestureName").value;
+    const type = document.getElementById("remapType").value;
+    const value = document.getElementById("remapValue").value;
+
+    if (!gesture || !value) {
+        alert("Fill all fields");
+        return;
+    }
 
     let action = {};
 
     if (type === "hotkey") {
         action = { type: "hotkey", keys: value.split(",") };
     }
-    else if (type === "press") {
-        action = { type: "press", key: value };
+    else if (type === "volume" || type === "brightness") {
+        action = { type: type, direction: value };
     }
-    else if (type === "alt_tab") {
-        action = { type: "alt_tab", count: parseInt(value) };
+    else if (type === "open_app") {
+        action = { type: "open_app", path: value };
+    }
+    else if (type === "system_command") {
+        action = { type: "system_command", command: value };
     }
 
     fetch("/update", {
@@ -73,18 +172,52 @@ function updateGesture() {
     }).then(() => location.reload());
 }
 
-function deleteGesture(gesture) {
-    fetch("/delete", {
+function addNewGesture() {
+
+    const name = document.getElementById("newGestureName").value;
+    const type = document.getElementById("newType").value;
+    const value = document.getElementById("newGestureValue").value;
+
+    if (!name || !value) {
+        alert("Fill all fields");
+        return;
+    }
+
+    checkCollectionProgress();
+
+    fetch("/add_new_gesture", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ gesture: gesture })
-    }).then(() => location.reload());
+        body: JSON.stringify({
+            gesture: name,
+            action: { type: type, value: value }
+        })
+    });
 }
 
-function retrain() {
-    fetch("/retrain", { method: "POST" })
-    .then(() => alert("Retraining started"));
+function checkCollectionProgress() {
+
+    const interval = setInterval(() => {
+
+        fetch("/collection_status")
+        .then(res => res.json())
+        .then(data => {
+
+            document.getElementById("progressBar").style.width =
+                data.progress + "%";
+
+            document.getElementById("collectionText").innerText =
+                data.status + " (" + data.progress + "%)";
+
+            if (data.status === "completed") {
+                clearInterval(interval);
+                location.reload();
+            }
+        });
+
+    }, 500);
 }
+
 </script>
 
 </body>
