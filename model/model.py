@@ -13,8 +13,10 @@ data = pd.read_csv("model/desktop_gesture_data.csv", header=None)
 X = data.iloc[:, :-1].values
 y = data.iloc[:, -1].values
 
+unique_classes = data.iloc[:, -1].unique().tolist()
 encoder = LabelEncoder()
-y_encoded = encoder.fit_transform(y)
+encoder.fit(unique_classes)
+y_encoded = encoder.transform(y)
 
 with open("model/label_encoder.pkl", "wb") as f:
     pickle.dump(encoder, f)

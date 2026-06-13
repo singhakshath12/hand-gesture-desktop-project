@@ -1,35 +1,34 @@
 {
     "fist": {
-        "type": "hotkey",
-        "keys": [
-            "alt",
-            "f4"
-        ]
+        "type": "volume",
+        "params": {
+            "direction": "up"
+        }
     },
     "UP": {
         "type": "alt_tab",
         "count": 1
     },
     "two_fingers": {
-        "type": "alt_tab",
-        "count": 2
+        "type": "volume",
+        "params": {
+            "direction": "down"
+        }
     },
     "three_fingers": {
         "type": "alt_tab",
         "count": 3
     },
     "four_fingers": {
-        "type": "alt_tab",
-        "count": 4
-    },
-    "LEFT": {
-        "type": "press",
-        "key": "printscreen"
-    },
-    "call": {
         "type": "hotkey",
-        "keys": [
-            "L"
-        ]
+        "params": {
+            "keys": "ctrl+c"
+        }
+    },
+    "palm": {
+        "type": "tracking"
+    },
+    "ok": {
+        "type": "left_click"
     }
 }

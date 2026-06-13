@@ -38,7 +38,7 @@ def check_model_reload():
         with open(ENCODER_PATH, "rb") as f:
             encoder = pickle.load(f)
         model_timestamp = current_timestamp
-        print("✅ Model reloaded successfully.")
+        print("Model reloaded successfully.")
 
 mp_hands = mp.solutions.hands
 mp_draw = mp.solutions.drawing_utils
@@ -60,9 +60,12 @@ def normalize_landmarks(lm):
             point.z - base_z])
 
     features = np.array(features)
-    max_value = np.max(np.abs(features))
-    if max_value != 0:
-        features = features / max_value
+    
+    # Hand-scale normalization
+    scale_dist = np.linalg.norm(features[27:30])
+    if scale_dist > 0:
+        features = features / scale_dist
+        
     return features.reshape(1, -1)
 
 
@@ -72,6 +75,7 @@ while True:
     if not ret:
         continue
 
+    frame = cv2.resize(frame, (320, 240))
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = hands.process(rgb)
 

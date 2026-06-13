@@ -16,7 +16,7 @@ GESTURES = {
     ord('u'): "UP",
     ord('d'): "DOWN",
     ord('y'): "YO",
-    ord ('r'): "rock",
+    ord('o'): "rock",  # Changed from 'r' to 'o' to avoid duplicate with RIGHT
     ord('k'): "ok",
     ord('t'): "twist"
 
@@ -42,6 +42,7 @@ with open("model/desktop_gesture_data.csv", "a", newline="") as f:
         if not ret:
             continue
 
+        frame = cv2.resize(frame, (320, 240))
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = hands.process(frame_rgb)
 
@@ -64,10 +65,10 @@ with open("model/desktop_gesture_data.csv", "a", newline="") as f:
                     features.append(point.z - base_z)
                 features = np.array(features)
 
-# normalization
-                max_value = np.max(np.abs(features))
-                if max_value != 0:
-                    features = features / max_value
+                # Hand-scale normalization
+                scale_dist = np.linalg.norm(features[27:30])
+                if scale_dist > 0:
+                    features = features / scale_dist
 
                 data = features.tolist()
 
@@ -82,10 +83,11 @@ with open("model/desktop_gesture_data.csv", "a", newline="") as f:
 
         cv2.imshow("Collect Data", frame)
 
-        key = cv2.waitKey(1)
+        key = cv2.waitKey(1) & 0xFF
 
         if key in GESTURES and data is not None:
             writer.writerow(data + [GESTURES[key]])
+            f.flush()  # Force write to disk immediately
             print(f"Saved {GESTURES[key]}")
 
         elif key == ord('q'):

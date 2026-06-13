@@ -38,9 +38,10 @@ def normalize_landmarks(lm):
 
     features = np.array(features)
 
-    max_value = np.max(np.abs(features))
-    if max_value != 0:
-        features = features / max_value
+    # Hand-scale normalization
+    scale_dist = np.linalg.norm(features[27:30])
+    if scale_dist > 0:
+        features = features / scale_dist
 
     return features.reshape(1, -1)
 
@@ -49,6 +50,7 @@ while True:
     if not ret:
         continue
 
+    frame = cv2.resize(frame, (320, 240))
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = hands.process(rgb)
 

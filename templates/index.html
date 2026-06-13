@@ -1,224 +1,358 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" data-theme="dark">
 <head>
-    <title>GestureDesk Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GestureAI Desktop Control</title>
+    <!-- Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Base Styling -->
     <link rel="stylesheet" href="/static/style.css">
+    <!-- Socket.IO Client -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.1/socket.io.js"></script>
 </head>
 <body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <i class="fa-solid fa-hand-sparkles brand-icon"></i>
+                <h2>GestureAI</h2>
+            </div>
+            
+            <ul class="nav-links">
+                <li>
+                    <a href="#dashboard" class="nav-link active" data-route="dashboard">
+                        <i class="fa-solid fa-house"></i> <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#gestures" class="nav-link" data-route="gestures">
+                        <i class="fa-solid fa-shapes"></i> <span>Gestures</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#training" class="nav-link" data-route="training">
+                        <i class="fa-solid fa-brain"></i> <span>Training Hub</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#tutorial" class="nav-link" data-route="tutorial">
+                        <i class="fa-solid fa-book-open"></i> <span>Tutorial</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#settings" class="nav-link" data-route="settings">
+                        <i class="fa-solid fa-gear"></i> <span>Settings</span>
+                    </a>
+                </li>
+            </ul>
 
-<h1>GestureDesk Dashboard</h1>
+            <div class="sidebar-footer">
+                <button id="theme-toggle" class="icon-btn theme-toggle-btn" title="Toggle Theme">
+                    <i class="fa-solid fa-moon dark-icon"></i>
+                    <i class="fa-solid fa-sun light-icon"></i>
+                </button>
+            </div>
+        </nav>
 
-<h2>Live Gesture Detection</h2>
-
-<div>
-    <button onclick="startCamera()">Start Camera</button>
-    <button onclick="stopCamera()">Stop Camera</button>
-</div>
-
-<div class="live-section">
-    <img id="videoStream" width="640">
-</div>
-
-<hr>
-
-<h2>Gesture → Action Mapping</h2>
-
-<div class="gesture-grid">
-{% for gesture in all_gestures %}
-<div class="gesture-card">
-
-    <h3>{{ gesture }}</h3>
-
-    <img src="{{ url_for('static', filename='images/' + gesture + '.jpeg')}}"
-         class="gesture-image">
-
-    {% if gesture in action_map %}
-        <p>{{ action_map[gesture] }}</p>
-    {% else %}
-        <p class="no-action">No function assigned</p>
-    {% endif %}
-
-    <div class="card-buttons">
-        <button onclick="remapGesture('{{ gesture }}')">Remap</button>
-        <button onclick="deleteGesture('{{ gesture }}')">Delete</button>
+        <!-- Main Dynamic Content Area -->
+        <main class="main-content">
+            <div id="page-container" class="page-fade-in">
+                <!-- SPA Content injected here by router -->
+            </div>
+        </main>
+        
+        <!-- Portals for UI overlays -->
+        <div id="toast-root" class="toast-container"></div>
+        <div id="modal-root"></div>
     </div>
 
-</div>
-{% endfor %}
-</div>
+    <!-- =============== PAGE TEMPLATES =============== -->
 
-<hr>
-
-<h2>Built-in Gestures (Already Trained)</h2>
-<ul>
-{% for g in builtin %}
-    <li>{{ g }}</li>
-{% endfor %}
-</ul>
-
-<p style="color:red;">
-Do NOT add these as new gestures.
-</p>
-
-<hr>
-
-<h3>Update / Remap Gesture</h3>
-
-<input id="remapGestureName" placeholder="Gesture name">
-
-<select id="remapType">
-    <option value="hotkey">Keyboard Shortcut</option>
-    <option value="press">Single Key</option>
-    <option value="alt_tab">Alt + Tab</option>
-    <option value="volume">Volume Control</option>
-    <option value="brightness">Brightness Control</option>
-    <option value="open_app">Open Application</option>
-    <option value="system_command">System Command</option>
-</select>
-
-<input id="remapValue" placeholder="Enter action value">
-
-<button onclick="updateGesture()">Save Mapping</button>
-
-<hr>
-
-<h2>Add New Gesture</h2>
-
-<div class="instructions">
-    <h4>How to Train:</h4>
-    <ul>
-        <li>Keep your hand clearly visible.</li>
-        <li>Hold gesture steady.</li>
-        <li>Move hand slowly around frame.</li>
-        <li>Move closer and farther from camera.</li>
-        <li>Training lasts ~10 seconds.</li>
-    </ul>
-</div>
-
-<input id="newGestureName" placeholder="Enter new gesture name">
-
-<select id="newType">
-    <option value="hotkey">Keyboard Shortcut</option>
-    <option value="press">Single Key</option>
-    <option value="alt_tab">Alt + Tab</option>
-</select>
-
-<input id="newGestureValue" placeholder="Enter action value">
-
-<button onclick="addNewGesture()">Create & Train</button>
-
-<div id="collectionProgress" style="margin-top:15px;">
-    <div style="background:#ddd;width:300px;height:20px;border-radius:10px;">
-        <div id="progressBar"
-             style="background:red;height:100%;width:0%;border-radius:10px;">
+    <!-- Dashboard Template -->
+    <template id="tpl-dashboard">
+        <div class="page-header header-split">
+            <div>
+                <h1>Dashboard</h1>
+                <p>Live system overview and active monitoring.</p>
+            </div>
+            <button id="btn-stop-camera" class="btn btn-danger hidden"><i class="fa-solid fa-stop"></i> Stop Engine</button>
         </div>
-    </div>
-    <p id="collectionText">Idle</p>
-</div>
+        
+        <div class="dashboard-grid">
+            <div class="main-feed-card card">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-camera"></i> Live Feed</h3>
+                    <div id="status-badge" class="badge badge-inactive"><i class="fa-solid fa-circle"></i> Inactive</div>
+                </div>
+                <div class="feed-container">
+                    <img id="camera-feed" src="" alt="">
+                    <div id="feed-overlay" class="feed-overlay">
+                        <button id="btn-start-camera" class="btn btn-primary btn-lg"><i class="fa-solid fa-play"></i> Start Engine</button>
+                    </div>
+                </div>
+                <div class="feed-footer">
+                    <div class="fps-counter"><i class="fa-solid fa-gauge-high"></i> FPS: <span id="fps-value">0</span></div>
+                    <div class="camera-cycle">
+                        <select id="select-camera-dashboard" class="form-control" style="padding: 4px 8px; font-size: 0.8rem;">
+                            <option value="0">Camera 0</option>
+                            <option value="1">Camera 1</option>
+                            <option value="2">Camera 2</option>
+                        </select>
+                    </div>
+                    <div class="current-pred">Detected: <strong id="pred-value">-</strong> (<span id="pred-conf">0</span>%)</div>
+                </div>
+            </div>
+            
+            <div class="action-log-card card">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-list-ul"></i> Action Log</h3>
+                </div>
+                <div id="action-log-container" class="action-log-list">
+                    <!-- Logs injected here -->
+                    <div class="empty-state text-tertiary">Waiting for actions...</div>
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <!-- Gesture Library Template -->
+    <template id="tpl-gestures">
+        <div class="page-header header-split">
+            <div>
+                <h1>Gesture Library</h1>
+                <p>Manage your built-in and custom AI gestures.</p>
+            </div>
+            <button id="btn-add-custom" class="btn btn-accent"><i class="fa-solid fa-plus"></i> Add Custom Gesture</button>
+        </div>
+        
+        <div class="gesture-section">
+            <h2 class="section-title"><i class="fa-solid fa-lock text-tertiary"></i> Built-in Gestures</h2>
+            <div id="builtin-grid" class="gesture-grid">
+                <!-- Rendered dynamically -->
+            </div>
+        </div>
+        
+        <div class="gesture-section mt-4">
+            <h2 class="section-title"><i class="fa-solid fa-user-pen text-accent"></i> Custom Gestures</h2>
+            <div id="custom-grid" class="gesture-grid">
+                <!-- Rendered dynamically -->
+            </div>
+        </div>
+    </template>
+    
+    <!-- Training Hub Template -->
+    <template id="tpl-training">
+        <div class="page-header">
+            <h1>Training Hub</h1>
+            <p>Collect gesture data and retrain your models instantly.</p>
+        </div>
+        
+        <div class="training-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-video"></i> 1. Data Collection</h3>
+                    <button id="btn-train-add-custom" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.85rem;"><i class="fa-solid fa-plus"></i> New Gesture</button>
+                </div>
+                <div class="card-body">
+                    <p class="text-secondary mb-3">Select a custom gesture to collect more training samples from your camera.</p>
+                    
+                    <div class="feed-container mb-3" style="aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+                        <img id="training-camera-feed" src="" style="width: 100%; height: 100%; object-fit: cover;">
+                        <div id="training-feed-placeholder" style="color: #64748b; font-size: 0.9rem;">Start collection to enable camera</div>
+                    </div>
 
-<p id="status">Status: idle</p>
+                    <div class="form-group">
+                        <label>Target Gesture:</label>
+                        <select id="collect-gesture-select" class="form-control">
+                            <option value="">-- Select Custom Gesture --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-flex mt-3" style="display: flex; gap: 8px;">
+                        <button id="btn-start-collection" class="btn btn-primary flex-1" disabled style="flex: 1;"><i class="fa-solid fa-record-vinyl"></i> Start Collection</button>
+                        <button id="btn-cancel-collection" class="btn btn-danger hidden"><i class="fa-solid fa-stop"></i> Cancel</button>
+                    </div>
+                    
+                    <div id="collection-progress-container" class="progress-container hidden mt-4">
+                        <div class="progress-header">
+                            <span>Status: <strong id="collection-status-text" class="text-accent">Collecting...</strong></span>
+                            <span id="collection-progress-text">0/400</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div id="collection-progress-bar" class="progress-bar-fill"></div>
+                        </div>
+                        <div class="collection-instruction mt-3 p-3" style="background: rgba(99, 102, 241, 0.1); border-left: 4px solid var(--accent-color); border-radius: 4px; font-size: 0.85rem;">
+                            <strong><i class="fa-solid fa-arrows-up-down-left-right"></i> Important:</strong> Move your hand around the screen while holding the gesture to capture diverse angles.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-brain"></i> 2. Model Retraining</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-secondary mb-3">Retrain the neural network using the combined dataset (Built-in + Custom).</p>
+                    <button id="btn-start-training" class="btn btn-accent"><i class="fa-solid fa-bolt"></i> Train Model</button>
+                    
+                    <div id="training-progress-container" class="progress-container hidden mt-4">
+                        <div class="progress-header">
+                            <span>Status: <strong id="training-status-text" class="text-accent">Training...</strong></span>
+                            <span id="training-epoch-text">Epoch 0/0</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div id="training-progress-bar" class="progress-bar-fill fill-accent"></div>
+                        </div>
+                        <div class="training-stats mt-3">
+                            <div class="stat-box">
+                                <div class="stat-label">Loss</div>
+                                <div class="stat-value" id="train-loss">0.000</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Accuracy</div>
+                                <div class="stat-value" id="train-acc">0.0%</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Val Acc</div>
+                                <div class="stat-value" id="val-acc">0.0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <!-- Tutorial Template -->
+    <template id="tpl-tutorial">
+        <div class="page-header">
+            <h1>Tutorial</h1>
+            <p>Learn how to control your desktop with hand gestures.</p>
+        </div>
+        <div class="card">
+            <div class="card-body tutorial-content">
+                <h2>1. Start the Engine</h2>
+                <p>Go to the <strong>Dashboard</strong> and click "Start Engine". Ensure your hand is clearly visible, well-lit, and the FPS is stable.</p>
+                
+                <h2 class="mt-4">2. Built-in Gestures</h2>
+                <p>The system comes with 15 pre-trained gestures. You can view them in the <strong>Gesture Library</strong>. Actions are triggered when you hold the gesture steady for a few frames.</p>
+                
+                <h2 class="mt-4">3. Remapping Actions</h2>
+                <p>In the Gesture Library, click <strong>Remap</strong> on any gesture. You can assign it to:</p>
+                <ul class="styled-list">
+                    <li><strong>Hotkey:</strong> e.g., <code>ctrl+c</code> or <code>alt+f4</code></li>
+                    <li><strong>Key Press:</strong> e.g., <code>space</code> or <code>enter</code></li>
+                    <li><strong>Alt+Tab:</strong> Switch between recent windows.</li>
+                    <li><strong>Application:</strong> Launch a specific <code>.exe</code> file path.</li>
+                    <li><strong>System Command:</strong> Run arbitrary terminal commands.</li>
+                </ul>
+                
+                <h2 class="mt-4">4. Training Custom Gestures</h2>
+                <p>Want a gesture that isn't built-in?</p>
+                <ol class="styled-list">
+                    <li>Go to Gesture Library -> <strong>Add Custom Gesture</strong>. Give it a name and action.</li>
+                    <li>Go to <strong>Training Hub</strong> -> Select your new gesture -> <strong>Start Collection</strong>. Show the gesture to the camera for 10 seconds.</li>
+                    <li>Click <strong>Train Model</strong>. Wait for the epochs to finish. Your new gesture is now ready to use!</li>
+                </ol>
+            </div>
+        </div>
+    </template>
+    
+    <!-- Settings Template -->
+    <template id="tpl-settings">
+        <div class="page-header">
+            <h1>Settings</h1>
+            <p>Configure hardware devices, cooldowns, and preferences.</p>
+        </div>
+        <div class="settings-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-sliders"></i> System Parameters</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>Camera Index</label>
+                        <select id="setting-camera-index" class="form-control">
+                            <option value="0">Camera 0 (Default)</option>
+                            <option value="1">Camera 1</option>
+                            <option value="2">Camera 2</option>
+                        </select>
+                        <small class="text-tertiary">Select which webcam to capture from. Requires engine restart.</small>
+                    </div>
+                    
+                    <div class="form-group mt-3">
+                        <label>Action Cooldown (seconds)</label>
+                        <input type="number" id="setting-cooldown" class="form-control" step="0.5" min="0">
+                        <small class="text-tertiary">Delay before the same action can trigger again.</small>
+                    </div>
+                    
+                    <div class="form-group mt-3">
+                        <label>Confidence Threshold</label>
+                        <input type="number" id="setting-threshold" class="form-control" step="0.05" min="0" max="1">
+                        <small class="text-tertiary">Minimum ML confidence required to trigger (0.0 - 1.0).</small>
+                    </div>
+                    
+                    <div class="form-group mt-3">
+                        <label>Frame Confirmation</label>
+                        <input type="number" id="setting-frames" class="form-control" min="1" max="30">
+                        <small class="text-tertiary">How many consecutive frames the gesture must be held steady.</small>
+                    </div>
+                    
+                    <button id="btn-save-settings" class="btn btn-primary mt-4">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </template>
 
-<script>
+    <!-- Modal Template -->
+    <template id="tpl-modal-gesture">
+        <div class="modal-backdrop page-fade-in">
+            <div class="modal-content card">
+                <div class="modal-header">
+                    <h3 id="modal-title">Gesture Mapping</h3>
+                    <button class="icon-btn btn-modal-close"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group hidden" id="group-gesture-name">
+                        <label>Internal Name (No Spaces)</label>
+                        <input type="text" id="modal-gesture-name" class="form-control" placeholder="e.g. peace_sign">
+                    </div>
+                    <div class="form-group mt-3" id="group-display-name">
+                        <label>Display Name</label>
+                        <input type="text" id="modal-display-name" class="form-control" placeholder="e.g. Peace Sign">
+                    </div>
+                    <div class="form-group mt-3">
+                        <label>Action Type</label>
+                        <select id="modal-action-type" class="form-control">
+                            <option value="none">None (Visual Only)</option>
+                            <option value="tracking">Cursor Tracking</option>
+                            <option value="left_click">Left Click</option>
+                            <option value="hotkey">Hotkey (e.g. ctrl+c)</option>
+                            <option value="press">Key Press (e.g. space)</option>
+                            <option value="alt_tab">Alt+Tab</option>
+                            <option value="volume">Volume</option>
+                            <option value="open_app">Open Application</option>
+                            <option value="system_command">System Command</option>
+                        </select>
+                    </div>
+                    <div id="modal-dynamic-params" class="mt-3">
+                        <!-- Injected dynamically -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-modal-close">Cancel</button>
+                    <button id="btn-modal-save" class="btn btn-primary">Save Mapping</button>
+                </div>
+            </div>
+        </div>
+    </template>
 
-function startCamera() {
-    fetch("/start_camera", { method: "POST" })
-    .then(() => {
-        document.getElementById("videoStream").src = "/video_feed";
-    });
-}
-
-function stopCamera() {
-    fetch("/stop_camera", { method: "POST" })
-    .then(() => {
-        document.getElementById("videoStream").src = "";
-    });
-}
-
-function remapGesture(gesture) {
-    document.getElementById("remapGestureName").value = gesture;
-    window.scrollTo(0, document.body.scrollHeight);
-}
-
-function updateGesture() {
-
-    const gesture = document.getElementById("remapGestureName").value;
-    const type = document.getElementById("remapType").value;
-    const value = document.getElementById("remapValue").value;
-
-    if (!gesture || !value) {
-        alert("Fill all fields");
-        return;
-    }
-
-    let action = {};
-
-    if (type === "hotkey") {
-        action = { type: "hotkey", keys: value.split(",") };
-    }
-    else if (type === "volume" || type === "brightness") {
-        action = { type: type, direction: value };
-    }
-    else if (type === "open_app") {
-        action = { type: "open_app", path: value };
-    }
-    else if (type === "system_command") {
-        action = { type: "system_command", command: value };
-    }
-
-    fetch("/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ gesture: gesture, action: action })
-    }).then(() => location.reload());
-}
-
-function addNewGesture() {
-
-    const name = document.getElementById("newGestureName").value;
-    const type = document.getElementById("newType").value;
-    const value = document.getElementById("newGestureValue").value;
-
-    if (!name || !value) {
-        alert("Fill all fields");
-        return;
-    }
-
-    checkCollectionProgress();
-
-    fetch("/add_new_gesture", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            gesture: name,
-            action: { type: type, value: value }
-        })
-    });
-}
-
-function checkCollectionProgress() {
-
-    const interval = setInterval(() => {
-
-        fetch("/collection_status")
-        .then(res => res.json())
-        .then(data => {
-
-            document.getElementById("progressBar").style.width =
-                data.progress + "%";
-
-            document.getElementById("collectionText").innerText =
-                data.status + " (" + data.progress + "%)";
-
-            if (data.status === "completed") {
-                clearInterval(interval);
-                location.reload();
-            }
-        });
-
-    }, 500);
-}
-
-</script>
-
+    <!-- Main Application Logic -->
+    <script src="/static/app.js"></script>
 </body>
 </html>
