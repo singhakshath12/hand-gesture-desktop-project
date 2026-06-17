@@ -491,9 +491,16 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (!nameInput) return;
 
-            const name = nameInput.value.trim().replace(/\s+/g, '_');
             const dName = dNameInput.value.trim();
-            if (!name) return window.ui.showToast('Internal Name required', 'error');
+            let name = nameInput.value.trim().replace(/\s+/g, '_');
+            
+            if (!name && !nameInput.disabled) {
+                // Auto-generate internal name from Display Name for new custom gestures
+                name = dName.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+            }
+            
+            if (!name) return window.ui.showToast('Display Name required', 'error');
+            if (!dName) return window.ui.showToast('Display Name required', 'error');
             
             const type = typeSelect.value;
             let params = {};

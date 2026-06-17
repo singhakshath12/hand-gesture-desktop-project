@@ -2,7 +2,7 @@
     "fist": {
         "type": "volume",
         "params": {
-            "direction": "up"
+            "direction": "down"
         }
     },
     "UP": {
@@ -10,9 +10,9 @@
         "count": 1
     },
     "two_fingers": {
-        "type": "volume",
+        "type": "hotkey",
         "params": {
-            "direction": "down"
+            "keys": "ctrl+tab"
         }
     },
     "three_fingers": {
@@ -30,5 +30,11 @@
     },
     "ok": {
         "type": "left_click"
+    },
+    "middle_finger": {
+        "type": "press",
+        "params": {
+            "key": "d"
+        }
     }
 }
