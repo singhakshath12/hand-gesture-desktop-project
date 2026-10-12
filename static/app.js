@@ -59,6 +59,190 @@ const UI = {
 };
 window.ui = UI;
 
+// ──────────────────────────────────────────────────
+// ACTION PRESETS — Two-Dropdown Cascading Config
+// ──────────────────────────────────────────────────
+const ACTION_PRESETS = {
+    os_keys: {
+        label: '🖥️ Operating System Keys',
+        presets: [
+            { label: 'Print Screen',             type: 'press',   params: { key: 'printscreen' } },
+            { label: 'Task View (Win+Tab)',       type: 'hotkey',  params: { keys: 'win+tab' } },
+            { label: 'Lock Screen (Win+L)',       type: 'hotkey',  params: { keys: 'win+l' } },
+            { label: 'Show Desktop (Win+D)',      type: 'hotkey',  params: { keys: 'win+d' } },
+            { label: 'Copy (Ctrl+C)',             type: 'hotkey',  params: { keys: 'ctrl+c' } },
+            { label: 'Paste (Ctrl+V)',            type: 'hotkey',  params: { keys: 'ctrl+v' } },
+            { label: 'Cut (Ctrl+X)',              type: 'hotkey',  params: { keys: 'ctrl+x' } },
+            { label: 'Undo (Ctrl+Z)',             type: 'hotkey',  params: { keys: 'ctrl+z' } },
+            { label: 'Redo (Ctrl+Y)',             type: 'hotkey',  params: { keys: 'ctrl+y' } },
+            { label: 'Select All (Ctrl+A)',       type: 'hotkey',  params: { keys: 'ctrl+a' } },
+            { label: 'Task Manager (Ctrl+Shift+Esc)', type: 'hotkey', params: { keys: 'ctrl+shift+escape' } },
+            { label: 'Switch Window (Alt+Tab)',   type: 'alt_tab', params: { count: 1 } },
+            { label: 'Close Window (Alt+F4)',     type: 'hotkey',  params: { keys: 'alt+f4' } },
+            { label: 'File Explorer (Win+E)',     type: 'hotkey',  params: { keys: 'win+e' } },
+            { label: 'Run Dialog (Win+R)',        type: 'hotkey',  params: { keys: 'win+r' } },
+            { label: 'Virtual Desktop Left',      type: 'hotkey',  params: { keys: 'ctrl+win+left' } },
+            { label: 'Virtual Desktop Right',     type: 'hotkey',  params: { keys: 'ctrl+win+right' } },
+            { label: '✏️ Custom OS Shortcut…',    type: 'hotkey',  params: null, custom: true, customField: 'keys', customLabel: 'Keys (e.g. win+shift+s)', customPlaceholder: 'win+shift+s' },
+        ]
+    },
+    keyboard: {
+        label: '⌨️ Keyboard Keys',
+        presets: [
+            { label: 'Enter',       type: 'press', params: { key: 'enter' } },
+            { label: 'Escape',      type: 'press', params: { key: 'escape' } },
+            { label: 'Space',       type: 'press', params: { key: 'space' } },
+            { label: 'Backspace',   type: 'press', params: { key: 'backspace' } },
+            { label: 'Delete',      type: 'press', params: { key: 'delete' } },
+            { label: 'Tab',         type: 'press', params: { key: 'tab' } },
+            { label: 'Arrow Up',    type: 'press', params: { key: 'up' } },
+            { label: 'Arrow Down',  type: 'press', params: { key: 'down' } },
+            { label: 'Arrow Left',  type: 'press', params: { key: 'left' } },
+            { label: 'Arrow Right', type: 'press', params: { key: 'right' } },
+            { label: 'Page Up',     type: 'press', params: { key: 'pageup' } },
+            { label: 'Page Down',   type: 'press', params: { key: 'pagedown' } },
+            { label: 'Home',        type: 'press', params: { key: 'home' } },
+            { label: 'End',         type: 'press', params: { key: 'end' } },
+            { label: 'F5 (Refresh)',type: 'press', params: { key: 'f5' } },
+            { label: '✏️ Custom Key…', type: 'press', params: null, custom: true, customField: 'key', customLabel: 'Key Name', customPlaceholder: 'f11' },
+        ]
+    },
+    shortcuts: {
+        label: '⚡ Keyboard Shortcuts',
+        presets: [
+            { label: 'New Tab (Ctrl+T)',          type: 'hotkey', params: { keys: 'ctrl+t' } },
+            { label: 'Close Tab (Ctrl+W)',        type: 'hotkey', params: { keys: 'ctrl+w' } },
+            { label: 'Reopen Tab (Ctrl+Shift+T)', type: 'hotkey', params: { keys: 'ctrl+shift+t' } },
+            { label: 'Find (Ctrl+F)',             type: 'hotkey', params: { keys: 'ctrl+f' } },
+            { label: 'Save (Ctrl+S)',             type: 'hotkey', params: { keys: 'ctrl+s' } },
+            { label: 'Save As (Ctrl+Shift+S)',    type: 'hotkey', params: { keys: 'ctrl+shift+s' } },
+            { label: 'Print (Ctrl+P)',            type: 'hotkey', params: { keys: 'ctrl+p' } },
+            { label: 'Zoom In (Ctrl++)',          type: 'hotkey', params: { keys: 'ctrl+plus' } },
+            { label: 'Zoom Out (Ctrl+-)',         type: 'hotkey', params: { keys: 'ctrl+minus' } },
+            { label: 'Bold (Ctrl+B)',             type: 'hotkey', params: { keys: 'ctrl+b' } },
+            { label: 'Italics (Ctrl+I)',          type: 'hotkey', params: { keys: 'ctrl+i' } },
+            { label: 'Underline (Ctrl+U)',        type: 'hotkey', params: { keys: 'ctrl+u' } },
+            { label: 'Next Window (Alt+Tab)',     type: 'alt_tab', params: { count: 1 } },
+            { label: '✏️ Custom Shortcut…',       type: 'hotkey', params: null, custom: true, customField: 'keys', customLabel: 'Keys (e.g. ctrl+shift+n)', customPlaceholder: 'ctrl+shift+n' },
+        ]
+    },
+    volume: {
+        label: '🔊 Volume',
+        presets: [
+            { label: 'Volume Up',       type: 'volume', params: { direction: 'up' } },
+            { label: 'Volume Down',     type: 'volume', params: { direction: 'down' } },
+            { label: 'Mute / Unmute',   type: 'press',  params: { key: 'volumemute' } },
+        ]
+    },
+    playback: {
+        label: '🎵 Playback / Media',
+        presets: [
+            { label: 'Play / Pause',       type: 'press',  params: { key: 'playpause' } },
+            { label: 'Next Track',          type: 'press',  params: { key: 'nexttrack' } },
+            { label: 'Previous Track',      type: 'press',  params: { key: 'prevtrack' } },
+            { label: 'Stop Media',          type: 'press',  params: { key: 'stop' } },
+            { label: 'Fast Forward (→ 5s)', type: 'hotkey', params: { keys: 'shift+right' } },
+            { label: 'Rewind (← 5s)',       type: 'hotkey', params: { keys: 'shift+left' } },
+            { label: 'Toggle Fullscreen',   type: 'press',  params: { key: 'f11' } },
+        ]
+    },
+    type_text: {
+        label: '✍️ Type Custom Text',
+        presets: [
+            { label: '✏️ Enter text to type…', type: 'type_text', params: null, custom: true, customField: 'text', customLabel: 'Text to type when gesture is shown', customPlaceholder: 'Hello World!' },
+        ]
+    },
+    open_app: {
+        label: '📂 Open Application',
+        presets: [
+            { label: 'Notepad',             type: 'open_app', params: { path: 'notepad.exe' } },
+            { label: 'Calculator',           type: 'open_app', params: { path: 'calc.exe' } },
+            { label: 'File Explorer',        type: 'open_app', params: { path: 'explorer.exe' } },
+            { label: 'Chrome',               type: 'open_app', params: { path: 'chrome' } },
+            { label: 'VS Code',              type: 'open_app', params: { path: 'code' } },
+            { label: 'Command Prompt',       type: 'open_app', params: { path: 'cmd.exe' } },
+            { label: 'PowerShell',           type: 'open_app', params: { path: 'powershell.exe' } },
+            { label: '✏️ Custom App Path…',  type: 'open_app', params: null, custom: true, customField: 'path', customLabel: 'Application path or command', customPlaceholder: 'C:\\Program Files\\App\\app.exe' },
+        ]
+    }
+};
+
+/**
+ * Get a friendly human-readable label for a stored action object.
+ * Searches through ACTION_PRESETS to find a matching preset label.
+ */
+function getActionLabel(actionObj) {
+    if (!actionObj) return 'Unmapped';
+    
+    const type = typeof actionObj === 'string' ? actionObj : actionObj.type;
+    if (!type || type === 'none') return 'None';
+    if (type === 'tracking') return 'Cursor Tracking';
+    if (type === 'left_click') return 'Left Click';
+    
+    const params = actionObj.params || actionObj;
+    
+    // Search presets for an exact match
+    for (const catKey of Object.keys(ACTION_PRESETS)) {
+        for (const preset of ACTION_PRESETS[catKey].presets) {
+            if (preset.custom || !preset.params) continue;
+            if (preset.type !== type) continue;
+            
+            // Compare params
+            let match = true;
+            for (const [k, v] of Object.entries(preset.params)) {
+                if (String(params[k]).toLowerCase() !== String(v).toLowerCase()) { match = false; break; }
+            }
+            if (match) return preset.label;
+        }
+    }
+    
+    // Fallback: build a description from raw data
+    if (type === 'hotkey') return `Hotkey: ${params.keys || ''}`;
+    if (type === 'press') return `Key: ${params.key || ''}`;
+    if (type === 'alt_tab') return `Alt+Tab (${params.count || 1}x)`;
+    if (type === 'volume') return `Volume ${params.direction || ''}`;
+    if (type === 'open_app') return `Open: ${params.path || ''}`;
+    if (type === 'type_text') return `Type: "${(params.text || '').substring(0, 20)}…"`;
+    if (type === 'system_command') return `Cmd: ${params.command || ''}`;
+    
+    return type;
+}
+
+/**
+ * Given an existing action object, find the matching category key and preset index.
+ * Returns { categoryKey, presetIndex } or null.
+ */
+function findPresetForAction(actionObj) {
+    if (!actionObj || typeof actionObj === 'string') return null;
+    
+    const type = actionObj.type;
+    const params = actionObj.params || actionObj;
+    
+    for (const catKey of Object.keys(ACTION_PRESETS)) {
+        const category = ACTION_PRESETS[catKey];
+        for (let i = 0; i < category.presets.length; i++) {
+            const preset = category.presets[i];
+            if (preset.custom || !preset.params) continue;
+            if (preset.type !== type) continue;
+            
+            let match = true;
+            for (const [k, v] of Object.entries(preset.params)) {
+                if (String(params[k]).toLowerCase() !== String(v).toLowerCase()) { match = false; break; }
+            }
+            if (match) return { categoryKey: catKey, presetIndex: i };
+        }
+    }
+    
+    // No exact preset match — find the right category and use its custom entry
+    for (const catKey of Object.keys(ACTION_PRESETS)) {
+        const category = ACTION_PRESETS[catKey];
+        const customIdx = category.presets.findIndex(p => p.custom && p.type === type);
+        if (customIdx !== -1) return { categoryKey: catKey, presetIndex: customIdx, isCustom: true };
+    }
+    
+    return null;
+}
+
 // Page Controllers
 const Controllers = {
     async initDashboard() {
@@ -168,9 +352,8 @@ const Controllers = {
         const displayNames = data.display_names || {};
         
         const renderCard = (gesture, isBuiltin) => {
-            const actionStr = data.action_map[gesture] ? 
-                (typeof data.action_map[gesture] === 'string' ? data.action_map[gesture] : data.action_map[gesture].type) 
-                : 'Unmapped';
+            const actionObj = data.action_map[gesture];
+            const actionStr = getActionLabel(actionObj);
             const dName = displayNames[gesture] || gesture;
                 
             return `
@@ -211,65 +394,95 @@ const Controllers = {
         root.innerHTML = '';
         root.appendChild(tpl.content.cloneNode(true));
         
+        // Store callback globally for delegation handler
+        window.modalSaveCallback = onSaveCallback || null;
+        
         const title = root.querySelector('#modal-title');
         const nameInput = root.querySelector('#modal-gesture-name');
         const dNameInput = root.querySelector('#modal-display-name');
-        const typeSelect = root.querySelector('#modal-action-type');
+        const categorySelect = root.querySelector('#modal-action-category');
+        const presetGroup = root.querySelector('#group-action-preset');
+        const presetSelect = root.querySelector('#modal-action-preset');
         const dynamicParams = root.querySelector('#modal-dynamic-params');
-        const btnSave = root.querySelector('#btn-modal-save');
         
         if (gestureName) {
             title.innerText = 'Remap Gesture';
             nameInput.value = gestureName;
-            nameInput.disabled = true; // Internal ML ID stays locked
+            nameInput.disabled = true;
             dNameInput.value = existingDisplayName || gestureName;
         } else {
             title.innerText = 'Add Custom Gesture';
             nameInput.disabled = false;
         }
 
-        const renderParams = () => {
-            const type = typeSelect.value;
-            let html = '';
-            if (type === 'none') html = `<p class="text-tertiary text-sm mt-2">This gesture will only trigger UI visualizations and logging. It will not execute OS actions.</p>`;
-            else if (type === 'tracking') html = `<p class="text-tertiary text-sm mt-2">This gesture actively drives the mouse cursor. Action logging is suppressed.</p>`;
-            else if (type === 'left_click') html = `<p class="text-tertiary text-sm mt-2">Simulates a native OS left mouse click.</p>`;
-            else if (type === 'hotkey') html = `<label>Keys (e.g. ctrl+c)</label><input type="text" id="param-val" class="form-control" placeholder="ctrl+c">`;
-            else if (type === 'press') html = `<label>Key</label><input type="text" id="param-val" class="form-control" placeholder="space">`;
-            else if (type === 'alt_tab') html = `<label>Tab Count</label><input type="number" id="param-val" class="form-control" value="1">`;
-            else if (type === 'open_app') html = `<label>App Path</label><input type="text" id="param-val" class="form-control" placeholder="C:\\Windows\\notepad.exe">`;
-            else if (type === 'system_command') html = `<label>Command</label><input type="text" id="param-val" class="form-control" placeholder="shutdown /s">`;
-            else if (type === 'volume') html = `<label>Direction</label><select id="param-val" class="form-control"><option value="up">Up</option><option value="down">Down</option></select>`;
-            dynamicParams.innerHTML = html;
+        // Populate Dropdown 2 when Category changes
+        const populatePresets = (catKey) => {
+            presetSelect.innerHTML = '<option value="">-- Select an Action --</option>';
+            dynamicParams.innerHTML = '';
+            
+            if (!catKey || !ACTION_PRESETS[catKey]) {
+                presetGroup.classList.add('hidden');
+                return;
+            }
+            
+            const category = ACTION_PRESETS[catKey];
+            category.presets.forEach((p, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.textContent = p.label;
+                presetSelect.appendChild(opt);
+            });
+            presetGroup.classList.remove('hidden');
+            
+            // If only 1 preset (e.g. type_text), auto-select it
+            if (category.presets.length === 1) {
+                presetSelect.value = '0';
+                onPresetChange();
+            }
         };
 
-        typeSelect.onchange = renderParams;
+        // Show custom param input when a Custom preset is chosen
+        const onPresetChange = () => {
+            const catKey = categorySelect.value;
+            const idx = presetSelect.value;
+            dynamicParams.innerHTML = '';
+            
+            if (idx === '' || !catKey) return;
+            
+            const preset = ACTION_PRESETS[catKey].presets[parseInt(idx)];
+            if (preset.custom) {
+                dynamicParams.innerHTML = `
+                    <label>${preset.customLabel}</label>
+                    <input type="text" id="modal-custom-param" class="form-control" placeholder="${preset.customPlaceholder}">
+                `;
+            }
+        };
+
+        categorySelect.onchange = () => populatePresets(categorySelect.value);
+        presetSelect.onchange = onPresetChange;
         
-        // Pre-fill if editing
-        if (existingAction) {
-            if (typeof existingAction === 'string') {
-                const parts = existingAction.split(':');
-                typeSelect.value = parts[0].trim();
-                renderParams();
-                if(root.querySelector('#param-val') && parts[1]) root.querySelector('#param-val').value = parts[1].trim();
-            } else {
-                typeSelect.value = existingAction.type;
-                renderParams();
-                const pVal = root.querySelector('#param-val');
-                if (pVal) {
-                    if (existingAction.type === 'hotkey') pVal.value = existingAction.params.keys;
-                    else if (existingAction.type === 'press') pVal.value = existingAction.params.key;
-                    else if (existingAction.type === 'alt_tab') pVal.value = existingAction.params.count;
-                    else if (existingAction.type === 'open_app') pVal.value = existingAction.params.path;
-                    else if (existingAction.type === 'system_command') pVal.value = existingAction.params.command;
-                    else if (existingAction.type === 'volume') pVal.value = existingAction.params.direction;
+        // Pre-fill if editing an existing action
+        if (existingAction && typeof existingAction === 'object' && existingAction.type) {
+            const match = findPresetForAction(existingAction);
+            if (match) {
+                categorySelect.value = match.categoryKey;
+                populatePresets(match.categoryKey);
+                presetSelect.value = match.presetIndex;
+                onPresetChange();
+                
+                // Fill custom param input if it's a custom match
+                if (match.isCustom) {
+                    const preset = ACTION_PRESETS[match.categoryKey].presets[match.presetIndex];
+                    const customInput = root.querySelector('#modal-custom-param');
+                    if (customInput && preset.customField) {
+                        const params = existingAction.params || existingAction;
+                        customInput.value = params[preset.customField] || '';
+                    }
                 }
             }
-        } else {
-            renderParams();
-        };
+        }
         
-        // Note: Modal save and close are now handled via global Event Delegation
+        // Note: Modal save and close are handled via global Event Delegation below
     },
 
     async initTraining() {
@@ -487,7 +700,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const root = document.getElementById('modal-root');
             const nameInput = root.querySelector('#modal-gesture-name');
             const dNameInput = root.querySelector('#modal-display-name');
-            const typeSelect = root.querySelector('#modal-action-type');
+            const categorySelect = root.querySelector('#modal-action-category');
+            const presetSelect = root.querySelector('#modal-action-preset');
             
             if (!nameInput) return;
 
@@ -495,26 +709,36 @@ document.addEventListener('DOMContentLoaded', () => {
             let name = nameInput.value.trim().replace(/\s+/g, '_');
             
             if (!name && !nameInput.disabled) {
-                // Auto-generate internal name from Display Name for new custom gestures
                 name = dName.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
             }
             
             if (!name) return window.ui.showToast('Display Name required', 'error');
             if (!dName) return window.ui.showToast('Display Name required', 'error');
             
-            const type = typeSelect.value;
-            let params = {};
-            const pVal = root.querySelector('#param-val');
-            if (pVal) {
-                if (type === 'hotkey') params.keys = pVal.value;
-                else if (type === 'press') params.key = pVal.value;
-                else if (type === 'alt_tab') params.count = parseInt(pVal.value) || 1;
-                else if (type === 'open_app') params.path = pVal.value;
-                else if (type === 'system_command') params.command = pVal.value;
-                else if (type === 'volume') params.direction = pVal.value;
+            // Build action object from the selected preset
+            const catKey = categorySelect.value;
+            const presetIdx = presetSelect.value;
+            
+            if (!catKey || presetIdx === '') {
+                return window.ui.showToast('Please select an action category and action', 'error');
             }
             
-            const actionObj = { type, params };
+            const preset = ACTION_PRESETS[catKey].presets[parseInt(presetIdx)];
+            let actionObj;
+            
+            if (preset.custom) {
+                // Custom entry — read from text input
+                const customInput = root.querySelector('#modal-custom-param');
+                const customVal = customInput ? customInput.value.trim() : '';
+                if (!customVal) return window.ui.showToast('Please enter a value for the custom action', 'error');
+                
+                const params = {};
+                params[preset.customField] = customVal;
+                actionObj = { type: preset.type, params };
+            } else {
+                // Standard preset — use its pre-defined type + params
+                actionObj = { type: preset.type, params: { ...preset.params } };
+            }
             
             try {
                 if (nameInput.disabled) {
@@ -523,7 +747,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     await window.api.addGesture(name, actionObj, dName);
                 }
                 window.ui.showToast('Mapping saved successfully!');
-                root.innerHTML = ''; // Close modal
+                root.innerHTML = '';
                 
                 if (window.modalSaveCallback) {
                     window.modalSaveCallback();

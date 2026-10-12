@@ -6,6 +6,12 @@ import time
 import math
 import collections
 
+try:
+    import win32api
+    HAS_WIN32 = True
+except ImportError:
+    HAS_WIN32 = False
+
 pyautogui.PAUSE = 0
 pyautogui.FAILSAFE = False
 
@@ -96,11 +102,9 @@ class CursorTracker:
                 self.state = "TRACKING"
                 
         if self.state == "TRACKING":
-            try:
-                # Use win32api for lower latency if possible, else pyautogui
-                import win32api
+            if HAS_WIN32:
                 win32api.SetCursorPos((int(smooth_x), int(smooth_y)))
-            except ImportError:
+            else:
                 pyautogui.moveTo(smooth_x, smooth_y)
 
 cursor_tracker = CursorTracker()
@@ -109,12 +113,27 @@ def update_cursor(hand_landmarks, is_gesture_active):
     if len(hand_landmarks.landmark) > 9:
         cursor_tracker.update(hand_landmarks.landmark[9], is_gesture_active)
 
+_action_map_cache = None
+_action_map_mtime = 0
+
 def load_action_map():
+    global _action_map_cache, _action_map_mtime
     try:
-        with open("action_map.json", "r") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return {}
+        path = "action_map.json"
+        mtime = os.path.getmtime(path)
+        if _action_map_cache is None or mtime != _action_map_mtime:
+            with open(path, "r") as f:
+                _action_map_cache = json.load(f)
+            _action_map_mtime = mtime
+    except (FileNotFoundError, OSError):
+        if _action_map_cache is None:
+            _action_map_cache = {}
+    return _action_map_cache
+
+def invalidate_cache():
+    global _action_map_cache, _action_map_mtime
+    _action_map_cache = None
+    _action_map_mtime = 0
 
 def trigger_action(gesture, cooldown):
     global last_action_time
@@ -169,7 +188,7 @@ def trigger_action(gesture, cooldown):
             pyautogui.keyDown('alt')
             for _ in range(count):
                 pyautogui.press('tab')
-                time.sleep(0.1)
+                time.sleep(0.02)
             pyautogui.keyUp('alt')
             action_desc = f"Alt+Tab ({count}x)"
             executed = True
@@ -184,11 +203,22 @@ def trigger_action(gesture, cooldown):
                 action_desc = "Volume Down"
             executed = True
             
+        elif action_type == "type_text":
+            text = params.get("text", action_data.get("text", ""))
+            if text:
+                pyautogui.write(text, interval=0.03)
+                action_desc = f"Typed: {text[:30]}{'...' if len(text) > 30 else ''}"
+                executed = True
+
         elif action_type == "open_app":
-            app_path = params.get("path")
-            if app_path and os.path.exists(app_path):
-                subprocess.Popen(app_path)
-                return {"status": "success", "description": f"Opened App"}
+            app_path = params.get("path", action_data.get("path", ""))
+            if app_path:
+                try:
+                    subprocess.Popen(app_path, shell=True)
+                    action_desc = f"Opened: {os.path.basename(app_path)}"
+                    executed = True
+                except Exception as e:
+                    print(f"Failed to open app: {e}")
                 
         elif action_type == "left_click":
             pyautogui.click(button='left')
@@ -217,7 +247,7 @@ def trigger_action(gesture, cooldown):
             pyautogui.keyDown('alt')
             for _ in range(count):
                 pyautogui.press('tab')
-                time.sleep(0.1)
+                time.sleep(0.02)
             pyautogui.keyUp('alt')
             action_desc = f"Alt+Tab ({count}x)"
             executed = True

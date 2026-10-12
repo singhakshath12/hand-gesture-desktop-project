@@ -12,6 +12,7 @@ from sklearn.preprocessing import LabelEncoder
 BUILTIN_DATA_PATH = "model/desktop_gesture_data.csv"
 CUSTOM_DATA_PATH = "model/custom_gesture_data.csv"
 MODEL_PATH = "model/gesture_ann.keras"
+TFLITE_PATH = "model/gesture_ann.tflite"
 ENCODER_PATH = "model/label_encoder.pkl"
 
 class ProgressCallback(tf.keras.callbacks.Callback):
@@ -145,6 +146,16 @@ def train_model(status_dict=None, socketio=None):
         
         # Save model
         model.save(MODEL_PATH)
+        
+        # Convert to TFLite for fast inference
+        try:
+            converter = tf.lite.TFLiteConverter.from_keras_model(model)
+            tflite_model = converter.convert()
+            with open(TFLITE_PATH, 'wb') as f:
+                f.write(tflite_model)
+            print(f"TFLite model saved to {TFLITE_PATH}")
+        except Exception as e:
+            print(f"TFLite conversion warning: {e}")
         
         if status_dict:
             status_dict["status"] = "completed"

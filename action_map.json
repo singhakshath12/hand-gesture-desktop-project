@@ -1,8 +1,8 @@
 {
     "fist": {
-        "type": "volume",
+        "type": "press",
         "params": {
-            "direction": "down"
+            "key": "enter"
         }
     },
     "UP": {
@@ -32,9 +32,15 @@
         "type": "left_click"
     },
     "middle_finger": {
-        "type": "press",
+        "type": "type_text",
         "params": {
-            "key": "d"
+            "text": "fuck you"
+        }
+    },
+    "avantika_is_alright_ig": {
+        "type": "type_text",
+        "params": {
+            "text": "lowkey fuck hardik"
         }
     }
 }

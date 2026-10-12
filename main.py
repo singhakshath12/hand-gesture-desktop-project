@@ -2,43 +2,64 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import pickle
-from tensorflow.keras.models import load_model
 from action_engine import trigger_action
 import os
 import time
+
+# ── TFLite Interpreter Import ─────────────────────────────────────────────────
+try:
+    from tflite_runtime.interpreter import Interpreter as TFLiteInterpreter
+except ImportError:
+    import tensorflow as tf
+    TFLiteInterpreter = tf.lite.Interpreter
+
 current_prediction = {
     "gesture": None,
     "confidence": 0
 }
 
-MODEL_PATH = "model/gesture_ann.keras"
+TFLITE_PATH = "model/gesture_ann.tflite"
 ENCODER_PATH = "model/label_encoder.pkl"
 
-CONF_THRESHOLD = 0.8
+CONF_THRESHOLD = 0.85
 FRAME_CONFIRMATION = 2
 
 last_detected_gesture = None
 gesture_counter = 0
 
-model = load_model(MODEL_PATH)
+# Load TFLite model
+interpreter = TFLiteInterpreter(model_path=TFLITE_PATH)
+interpreter.allocate_tensors()
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
 
 with open(ENCODER_PATH, "rb") as f:
     encoder = pickle.load(f)
 
-model_timestamp = os.path.getmtime(MODEL_PATH)
+model_timestamp = os.path.getmtime(TFLITE_PATH)
 
 def check_model_reload():
-    global model, encoder, model_timestamp
-    current_timestamp = os.path.getmtime(MODEL_PATH)
+    global interpreter, input_details, output_details, encoder, model_timestamp
+    current_timestamp = os.path.getmtime(TFLITE_PATH)
 
     if current_timestamp != model_timestamp:
         print("🔄 New model detected. Reloading...")
-        model = load_model(MODEL_PATH)
+        interpreter = TFLiteInterpreter(model_path=TFLITE_PATH)
+        interpreter.allocate_tensors()
+        input_details = interpreter.get_input_details()
+        output_details = interpreter.get_output_details()
 
         with open(ENCODER_PATH, "rb") as f:
             encoder = pickle.load(f)
         model_timestamp = current_timestamp
         print("Model reloaded successfully.")
+
+def predict_tflite(features):
+    """Run TFLite inference. Returns raw output array."""
+    input_data = features.astype(np.float32)
+    interpreter.set_tensor(input_details[0]['index'], input_data)
+    interpreter.invoke()
+    return interpreter.get_tensor(output_details[0]['index'])
 
 mp_hands = mp.solutions.hands
 mp_draw = mp.solutions.drawing_utils
@@ -90,7 +111,7 @@ while True:
 
             features = normalize_landmarks(hand_landmarks.landmark)
 
-            prediction = model.predict(features, verbose=0)
+            prediction = predict_tflite(features)
             confidence = np.max(prediction)
             predicted_index = np.argmax(prediction)
 
@@ -107,7 +128,7 @@ while True:
 
                 if gesture_counter >= FRAME_CONFIRMATION:
                     print(f"Confirmed: {gesture} ({confidence:.2f})")
-                    trigger_action(gesture)
+                    trigger_action(gesture, 1.0)
                     print (gesture)
                     gesture_counter = 0
 
